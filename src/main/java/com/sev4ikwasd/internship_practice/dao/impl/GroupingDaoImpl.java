@@ -31,11 +31,6 @@ public class GroupingDaoImpl implements GroupingDao {
     }
 
     @Override
-    public List<Grouping> readAll() {
-        return jdbcTemplate.query("select object_id, object_vname, object_name, object_sname from icd1.h_dic_objects where class_id = ?", ROW_MAPPER, dbConfig.getGroupingClassId());
-    }
-
-    @Override
     public List<Grouping> readAllForService(Integer id) {
         return jdbcTemplate.query("select h2.object_id, h2.object_vname, h2.object_name, h2.object_sname from icd3.relations r " +
                 "inner join icd1.h_dic_objects h1 on r.id1 = h1.object_id " +

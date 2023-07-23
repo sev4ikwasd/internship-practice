@@ -8,7 +8,5 @@ import java.util.Optional;
 public interface GroupingDao {
     Optional<Grouping> read(Integer id);
 
-    List<Grouping> readAll();
-
     List<Grouping> readAllForService(Integer id);
 }

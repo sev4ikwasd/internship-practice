@@ -24,11 +24,6 @@ public class CompanyDaoImpl implements CompanyDao {
     }
 
     @Override
-    public Company create(Company instance) {
-        throw new UnsupportedOperationException("Not yet implemented");
-    }
-
-    @Override
     public Optional<Company> read(Integer id) {
         return queryForObjectToOptional(jdbcTemplate, "select pred_id, vname, name, sname, sname2 from icd1.predpriyatia where pred_id = ?", ROW_MAPPER, id);
     }
@@ -41,15 +36,5 @@ public class CompanyDaoImpl implements CompanyDao {
     @Override
     public List<Company> readAll() {
         return jdbcTemplate.query("select pred_id, vname, name, sname, sname2 from icd1.predpriyatia", ROW_MAPPER);
-    }
-
-    @Override
-    public Company update(Company instance) {
-        throw new UnsupportedOperationException("Not yet implemented");
-    }
-
-    @Override
-    public void delete(Company id) {
-        throw new UnsupportedOperationException("Not yet implemented");
     }
 }

@@ -11,4 +11,11 @@ public class CompanyRelation {
     private String name;
     private String shortName;
     private Company company;
+
+    public CompanyRelation(String fullName, String name, String shortName, Company company) {
+        this.fullName = fullName;
+        this.name = name;
+        this.shortName = shortName;
+        this.company = company;
+    }
 }
