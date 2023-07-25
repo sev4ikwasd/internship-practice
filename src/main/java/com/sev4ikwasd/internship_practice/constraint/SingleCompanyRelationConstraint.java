@@ -13,7 +13,7 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface SingleCompanyRelationConstraint {
-    String message() default "company should be related to only one company";
+    String message() default "company to grouping relation should be unique";
 
     Class<?>[] groups() default {};
 

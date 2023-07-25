@@ -22,6 +22,7 @@ public class CompanyRelationDaoImpl implements CompanyRelationDao {
     private final JdbcTemplate jdbcTemplate;
     private final DbConfig dbConfig;
 
+    private final String groupingClassIdString;
     private final String companyClassIdString;
     private final RowMapper<CompanyRelation> ROW_MAPPER = (ResultSet resultSet, int rowNum) -> new CompanyRelation(resultSet.getInt("object_id"), resultSet.getString("object_vname"), resultSet.getString("object_name"), resultSet.getString("object_sname"), null);
     private final RowMapper<Integer> COMPANY_ROW_MAPPER = (ResultSet resultSet, int rowNum) -> resultSet.getInt("refer");
@@ -29,20 +30,23 @@ public class CompanyRelationDaoImpl implements CompanyRelationDao {
     public CompanyRelationDaoImpl(JdbcTemplate jdbcTemplate, DbConfig dbConfig) {
         this.jdbcTemplate = jdbcTemplate;
         this.dbConfig = dbConfig;
+        groupingClassIdString = String.join(", ", dbConfig.getGroupingClassIdList().stream().map(String::valueOf).toList());
         companyClassIdString = String.join(", ", dbConfig.getCompanyClassIdList().stream().map(String::valueOf).toList());
     }
 
     @Override
     @Transactional
     public CompanyRelation create(CompanyRelation companyRelation, Grouping grouping) {
-        //TODO correct class_id and rel_id
         var newHDicObjectsId = jdbcTemplate.query("select (max(h_dic_objects_id) + 1) as new_id from icd1.h_dic_objects", (ResultSet resultSet, int rowNum) -> resultSet.getInt("new_id")).get(0);
         var newObjectId = jdbcTemplate.query("select (max(object_id) + 1) as new_id from icd1.h_dic_objects", (ResultSet resultSet, int rowNum) -> resultSet.getInt("new_id")).get(0);
+        var groupingClassId = jdbcTemplate.query("select class_id from icd1.h_dic_objects where object_id = ?", (ResultSet resultSet, int rowNum) -> resultSet.getInt("class_id"), grouping.getId()).get(0);
+        var newClassId = dbConfig.getCompanyClassIdList().get(dbConfig.getGroupingClassIdList().indexOf(groupingClassId));
+        var newIdRel = jdbcTemplate.query("select (max(id_rel) + 1) as new_id from icd3.relations", (ResultSet resultSet, int rowNum) -> resultSet.getInt("new_id")).get(0);
         jdbcTemplate.update("insert into icd1.h_dic_objects(h_dic_objects_id, object_id, class_id, object_vname, object_name, object_sname, refer, cor_tip, date_nd, cor_time) " +
-                        "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", newHDicObjectsId, newObjectId, dbConfig.getCompanyClassIdList().get(1), companyRelation.getFullName(),
+                        "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", newHDicObjectsId, newObjectId, newClassId, companyRelation.getFullName(),
                 companyRelation.getName(), companyRelation.getShortName(), companyRelation.getCompany().getId(), "I", LocalDate.now(), LocalDateTime.now());
         jdbcTemplate.update("insert into icd3.relations(id_rel, id1, id2, cor_tip, date_nd, cor_time) values(?, ?, ?, ?, ?, ?)",
-                120, grouping.getId(), newObjectId, "I", LocalDate.now(), LocalDateTime.now());
+                newIdRel, grouping.getId(), newObjectId, "I", LocalDate.now(), LocalDateTime.now());
         companyRelation.setId(newObjectId);
         return companyRelation;
     }
@@ -62,7 +66,7 @@ public class CompanyRelationDaoImpl implements CompanyRelationDao {
         return jdbcTemplate.query("select h2.object_id, h2.object_vname, h2.object_name, h2.object_sname from icd3.relations r " +
                 "inner join icd1.h_dic_objects h1 on r.id1 = h1.object_id " +
                 "inner join icd1.h_dic_objects h2 on r.id2 = h2.object_id " +
-                "where h1.class_id = ? and h2.class_id in (" + companyClassIdString + ") and h1.object_id = ?", ROW_MAPPER, dbConfig.getGroupingClassId(), id);
+                "where h1.class_id in (" + groupingClassIdString + ") and h2.class_id in (" + companyClassIdString + ") and h1.object_id = ?", ROW_MAPPER, id);
     }
 
     @Override

@@ -18,7 +18,8 @@ public class DbConfig {
     private Integer serviceClassId;
 
     @NotNull
-    private Integer groupingClassId;
+    @NotEmpty
+    private List<@NotNull Integer> groupingClassIdList;
 
     @NotNull
     @NotEmpty
